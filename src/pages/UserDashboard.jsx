@@ -6,7 +6,8 @@ import {
     ResponsiveContainer,
     PieChart, Pie, Cell
 } from "recharts";
-import "./dashboard.css";
+import "../styles/dashboard.css";
+
 
 /* =========================
    GITHUB RAW DATA

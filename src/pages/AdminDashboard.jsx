@@ -9,8 +9,8 @@ import {
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "../styles/dashboard.css";
 
-import "./dashboard.css";
 
 /* =========================
    COLOR PALETTE
