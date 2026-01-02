@@ -33,8 +33,10 @@ const CreditScoreGauge = ({ score }) => {
     const MAX = 850;
 
     const safeScore = Math.min(Math.max(score, MIN), MAX);
+
+    /* ✅ Correct angle mapping */
     const percent = (safeScore - MIN) / (MAX - MIN);
-    const needleAngle = 180 * percent;
+    const needleAngle = -90 + percent * 180;
 
     const zones = [
         { value: 0.33, color: COLORS.red },
@@ -44,6 +46,8 @@ const CreditScoreGauge = ({ score }) => {
 
     return (
         <div style={{ position: "relative", height: 260 }}>
+
+            {/* Gauge */}
             <ResponsiveContainer>
                 <PieChart>
                     <Pie
@@ -53,6 +57,7 @@ const CreditScoreGauge = ({ score }) => {
                         innerRadius={80}
                         outerRadius={120}
                         dataKey="value"
+                        stroke="none"
                     >
                         {zones.map((z, i) => (
                             <Cell key={i} fill={z.color} />
@@ -67,16 +72,33 @@ const CreditScoreGauge = ({ score }) => {
                     position: "absolute",
                     bottom: 60,
                     left: "50%",
-                    width: 3,
+                    width: 4,
                     height: 90,
                     background: "#111",
-                    transformOrigin: "bottom",
-                    transform: `rotate(${needleAngle}deg) translateX(-50%)`,
-                    transition: "transform 1s ease-out"
+                    borderRadius: 4,
+                    transformOrigin: "bottom center",
+                    transform: `translateX(-50%) rotate(${needleAngle}deg)`,
+                    transition: "transform 1s ease-out",
+                    zIndex: 10
                 }}
             />
 
-            {/* Center */}
+            {/* Needle Center */}
+            <div
+                style={{
+                    position: "absolute",
+                    bottom: 55,
+                    left: "50%",
+                    width: 14,
+                    height: 14,
+                    background: "#111",
+                    borderRadius: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: 11
+                }}
+            />
+
+            {/* Score */}
             <div
                 style={{
                     position: "absolute",
@@ -102,9 +124,7 @@ const UserDashboard = () => {
     const [users, setUsers] = useState([]);
     const [selectedId, setSelectedId] = useState("All");
 
-    /* =========================
-       FETCH DATA
-    ========================= */
+    /* Fetch data */
     useEffect(() => {
         fetch(DATA_URL)
             .then(res => res.json())
@@ -112,18 +132,14 @@ const UserDashboard = () => {
             .catch(err => console.error("FETCH ERROR:", err));
     }, []);
 
-    /* =========================
-       SELECTED USER
-    ========================= */
+    /* Selected user */
     const selectedUser = useMemo(() => {
         if (!users.length) return null;
         if (selectedId === "All") return users[0];
         return users.find(u => String(u.id) === selectedId);
     }, [users, selectedId]);
 
-    /* =========================
-       DERIVED VALUES
-    ========================= */
+    /* Derived values */
     const creditScore = selectedUser?.credit_score || 0;
     const vehicleType = selectedUser?.vehicle_type || "-";
     const annualMileage = selectedUser?.annual_mileage || 0;
@@ -138,18 +154,14 @@ const UserDashboard = () => {
             creditScore >= 550 ? COLORS.orange :
                 COLORS.red;
 
-    /* =========================
-       VIOLATIONS DATA
-    ========================= */
+    /* Violations */
     const violationData = useMemo(() => ([
         { name: "DUIs", value: selectedUser?.duis || 0 },
         { name: "Accidents", value: selectedUser?.past_accidents || 0 },
         { name: "Speeding", value: selectedUser?.speeding_violations || 0 }
     ]), [selectedUser]);
 
-    /* =========================
-       MILEAGE DISTRIBUTION
-    ========================= */
+    /* Mileage distribution */
     const mileageData = useMemo(() => {
         const map = {};
         users.forEach(u => {
@@ -165,13 +177,11 @@ const UserDashboard = () => {
     return (
         <div className="dashboard-page">
 
-            {/* HEADER */}
             <div className="dashboard-header">
                 <h2>User Risk & Insurance Profile</h2>
                 <p>Personalized insurance risk analytics</p>
             </div>
 
-            {/* FILTER */}
             <div className="filter-card">
                 <label>User ID</label>
                 <select value={selectedId} onChange={e => setSelectedId(e.target.value)}>
@@ -182,7 +192,6 @@ const UserDashboard = () => {
                 </select>
             </div>
 
-            {/* KPI CARDS */}
             <div className="kpi-grid">
                 <div className="kpi-card">
                     <span>VEHICLE TYPE</span>
@@ -205,9 +214,7 @@ const UserDashboard = () => {
                 </div>
             </div>
 
-            {/* CHARTS */}
             <div className="chart-row">
-
                 <div className="chart-card">
                     <h5>Credit Score Health</h5>
                     <CreditScoreGauge score={creditScore} />
@@ -224,11 +231,9 @@ const UserDashboard = () => {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-
             </div>
 
             <div className="chart-row">
-
                 <div className="chart-card">
                     <h5>Annual Mileage Distribution</h5>
                     <ResponsiveContainer width="100%" height={260}>
@@ -240,7 +245,6 @@ const UserDashboard = () => {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-
             </div>
 
         </div>
